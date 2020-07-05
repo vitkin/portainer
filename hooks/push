@@ -1,0 +1,25 @@
+#!/bin/bash
+version=latest
+repo=vitkin/portainer
+
+function manifest_create {
+  eval "docker manifest create ${repo}:${version} portainer/portainer:{$1}"
+}
+
+function manifest_annotate {
+  docker manifest annotate --os $1 --arch $2 ${repo}:${version} portainer/portainer:$1-$2
+}
+
+function manifest_push {
+  docker manifest push -p ${repo}:${version}
+}  
+
+manifest_create linux-amd64,linux-arm,linux-arm64,linux-ppc64le,linux-s390x,windows-amd64
+
+for arch in amd64 arm arm64 ppc64le s390x; do
+ manifest_annotate linux ${arch}
+done
+
+manifest_annotate windows amd64
+
+manifest_push
